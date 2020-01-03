@@ -28,21 +28,6 @@ RUN apt-get update && apt-get install -y \
     wget \
     xdot
 
-# yosys
-WORKDIR /build
-RUN git clone https://github.com/YosysHQ/yosys.git yosys
-WORKDIR /build/yosys
-RUN DESTDIR=/install make install -j$(nproc)
-
-# Z3
-WORKDIR /build
-RUN git clone https://github.com/Z3Prover/z3.git z3
-WORKDIR /build/z3
-RUN python scripts/mk_make.py
-WORKDIR /build/z3/build
-RUN make -j$(nproc)
-RUN DESTDIR=/install make install
-
 # SymbiYosys
 WORKDIR /build
 RUN git clone https://github.com/cliffordwolf/SymbiYosys.git SymbiYosys
@@ -51,26 +36,23 @@ RUN make DESTDIR=/install install
 
 # boolector
 WORKDIR /build
-RUN wget http://fmv.jku.at/boolector/boolector-2.4.1-with-lingeling-bbc.tar.bz2 && \
-         tar xvjf boolector-2.4.1-with-lingeling-bbc.tar.bz2
-WORKDIR /build/boolector-2.4.1-with-lingeling-bbc
-RUN make
-RUN cp boolector/bin/boolector /install/usr/local/bin/boolector
+RUN git clone https://github.com/boolector/boolector
+WORKDIR /build/boolector
+RUN ./contrib/setup-lingeling.sh
+RUN ./contrib/setup-btor2tools.sh
+RUN ./configure.sh --prefix /install
+RUN cd build && make all install
 
-WORKDIR /build
-RUN curl -sSL https://get.haskellstack.org/ | sh
-RUN git clone https://github.com/zachjs/sv2v.git
-WORKDIR /build/sv2v
-RUN make
 
 FROM ubuntu:18.04 AS dev
 ENV DEBIAN_FRONTEND noninteractive
+
+COPY --from=towoe/sv2v /usr/bin/sv2v /usr/bin
+COPY --from=towoe/yosys /usr/local/ /usr/local/
 COPY --from=build /install/ /
-COPY --from=build /build/sv2v/bin/sv2v /usr/bin/
+
 RUN apt-get update && apt-get install -y \
-    build-essential \
     libffi-dev \
     libtcl8.6 \
     python3
-WORKDIR /project
 CMD ["/bin/bash"]

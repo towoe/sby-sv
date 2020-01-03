@@ -47,7 +47,7 @@ RUN DESTDIR=/install make install
 WORKDIR /build
 RUN git clone https://github.com/cliffordwolf/SymbiYosys.git SymbiYosys
 WORKDIR /build/SymbiYosys
-RUN sed -i -e "2d" Makefile && DESTDIR=/install make install
+RUN make DESTDIR=/install install
 
 # boolector
 WORKDIR /build

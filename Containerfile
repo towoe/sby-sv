@@ -54,5 +54,6 @@ COPY --from=build /install/ /
 RUN apt-get update && apt-get install -y \
     libffi-dev \
     libtcl8.6 \
+    make \
     python3
 CMD ["/bin/bash"]

@@ -1,6 +1,7 @@
 IMAGE_NAME?=towoe/sby-sv
 BUILD_OPTS?=--network host \
             --force-rm=true \
+            --format=docker \
             --layers=false
 CONTAINER_TOOL=podman
 

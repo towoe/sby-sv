@@ -43,6 +43,15 @@ RUN ./contrib/setup-btor2tools.sh
 RUN ./configure.sh --prefix /install
 RUN cd build && make all install
 
+# yices 2
+WORKDIR /build
+RUN git clone https://github.com/SRI-CSL/yices2.git yices2
+WORKDIR /build/yices2
+RUN autoconf
+RUN ./configure --prefix /install
+RUN make -j$(nproc)
+RUN make install
+
 
 FROM ubuntu:18.04 AS dev
 ENV DEBIAN_FRONTEND noninteractive

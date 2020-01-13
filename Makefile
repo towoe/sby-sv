@@ -1,4 +1,4 @@
-IMAGE_NAME?=towoe/sby-sv
+IMAGE_NAME?=docker.io/towoe/sby-sv
 BUILD_OPTS?=--network host \
             --force-rm=true \
             --format=docker \

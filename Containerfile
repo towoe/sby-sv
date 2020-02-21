@@ -28,6 +28,20 @@ RUN apt-get update && apt-get install -y \
     wget \
     xdot
 
+# sv2v
+WORKDIR /build
+RUN curl -sSL https://get.haskellstack.org/ | sh
+RUN git clone https://github.com/zachjs/sv2v.git
+WORKDIR /build/sv2v
+RUN make
+
+# yosys
+WORKDIR /build
+RUN git clone https://github.com/YosysHQ/yosys.git yosys
+WORKDIR /build/yosys
+RUN make config-clang
+RUN DESTDIR=/install make install -j$(nproc)
+
 # SymbiYosys
 WORKDIR /build
 RUN git clone https://github.com/cliffordwolf/SymbiYosys.git SymbiYosys
@@ -56,13 +70,15 @@ RUN make install
 FROM ubuntu:18.04 AS dev
 ENV DEBIAN_FRONTEND noninteractive
 
-COPY --from=towoe/sv2v /usr/bin/sv2v /usr/bin
-COPY --from=towoe/yosys /usr/local/ /usr/local/
+COPY --from=build /build/sv2v/bin/sv2v /usr/bin
 COPY --from=build /install/ /
 
 RUN apt-get update && apt-get install -y \
     libffi-dev \
     libtcl8.6 \
     make \
-    python3
+    python3 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 CMD ["/bin/bash"]
